@@ -1,3 +1,7 @@
+use std::thread;
+use egui::{ScrollArea, TextStyle};
+use crate::client::ask_hello;
+
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
@@ -65,31 +69,58 @@ impl eframe::App for TemplateApp {
             });
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading("Chat App");
+        egui::SidePanel::left("chat_list").show(ctx, |ui|{
 
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(&mut self.label);
-            });
+        });
 
-            ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                self.value += 1.0;
-            }
-
-            ui.separator();
-
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/main/",
-                "Source code."
-            ));
-
+        egui::SidePanel::right("details_pane").show(ctx, |ui|{
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 powered_by_egui_and_eframe(ui);
                 egui::warn_if_debug_build(ui);
+
+                ui.separator();
+
+                ui.add(egui::github_link_file!(
+                "https://github.com/MatiF100/chat-app/blob/master/",
+                "Source code."
+            ));
             });
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            // The central panel the region left after adding TopPanel's and SidePanel's
+            ui.heading("Chat App");
+            ui.separator();
+
+            let messages = [("User1", "Msg 1"), ("User2", "Msg 2")];
+
+
+            let text_style = TextStyle::Body;
+            let row_height = ui.text_style_height(&text_style);
+            let num_rows = messages.len();
+            
+
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label("Write something: ");
+                        ui.text_edit_singleline(&mut self.label);
+
+                        if ui.button("Send").clicked() {
+                        }
+                    });
+                
+                ui.separator();
+                
+                ScrollArea::vertical().auto_shrink(false).show_rows(ui, row_height, num_rows, |ui, row_range| {
+                    for message in &messages[row_range] {
+                        ui.horizontal(|ui| {
+                            ui.label(format!("{} said: {}", message.0, message.1));
+                        });
+                    }
+                });
+            });
+
+
         });
     }
 }

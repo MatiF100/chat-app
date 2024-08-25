@@ -18,7 +18,7 @@ fn main() -> eframe::Result {
         ..Default::default()
     };
     eframe::run_native(
-        "eframe template",
+        "Chat app",
         native_options,
         Box::new(|cc| Ok(Box::new(chat_app_frontend::TemplateApp::new(cc)))),
     )
